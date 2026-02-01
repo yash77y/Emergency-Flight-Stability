@@ -37,5 +37,8 @@ Embedded systems learning,
 Sensor–actuator interfacing practice,
 Real-time control logic implementation.
 
+Here the video link to the project-
+https://youtu.be/roX8tC0vCZs
+
 Author-
 Yash Salvi
