@@ -1,0 +1,62 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <Servo.h>
+
+int switchpin = 2;
+int motorpin = 8;
+int potpin = A1;
+int servopin = 9;
+int leftlimit = 300;
+int rightlimit = 700;
+int centerangle = 90;
+int maxleftangle = 180;
+int maxrightangle = 0;
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+Servo rudder;
+void setup() {
+  lcd.init();
+  lcd.backlight();
+  pinMode(motorpin, OUTPUT);
+  pinMode(switchpin, INPUT);
+  rudder.attach(servopin);
+  rudder.write(centerangle);
+  Serial.begin(115200);
+}
+void loop() {
+  bool powerison = (digitalRead(switchpin) == LOW);
+  int potvalue = analogRead(potpin);
+  Serial.println(potvalue);
+  if (!powerison) {
+    digitalWrite(motorpin, LOW);
+    lcd.setCursor(0, 0);
+    lcd.print("   Power Off    ");
+    lcd.setCursor(0, 1);
+    lcd.print("                ");
+    rudder.write(centerangle);
+  } else {
+    digitalWrite(motorpin, HIGH);
+    if (potvalue < leftlimit) {
+      lcd.setCursor(0, 0);
+      lcd.print("  Tilting Right  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Correcting Right");
+      int rudderangle = map(potvalue, 0, leftlimit - 1, maxrightangle, centerangle);
+      rudder.write(rudderangle);
+    } else if (potvalue > rightlimit) {
+      lcd.setCursor(0, 0);
+      lcd.print(" Tilting Left  ");
+      lcd.setCursor(0, 1);
+      lcd.print(" Correcting Left");
+      int rudderangle = map(potvalue, rightlimit + 1, 1023, centerangle, maxleftangle);
+      rudder.write(rudderangle);
+    } else {
+      lcd.setCursor(0, 0);
+      lcd.print(" System Stable  ");
+      lcd.setCursor(0, 1);
+      lcd.print("                ");
+      rudder.write(centerangle);
+    }
+  }
+  delay(100);
+}
